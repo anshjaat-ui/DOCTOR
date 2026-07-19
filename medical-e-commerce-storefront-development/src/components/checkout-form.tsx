@@ -1,0 +1,61 @@
+"use client";
+
+import Link from "next/link";
+import { CheckCircle2, ChevronLeft, CreditCard, LockKeyhole, MapPin, Minus, Plus, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { useCart } from "@/components/cart-provider";
+import { formatPrice } from "@/lib/catalog";
+
+type FormState = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+};
+
+const initialForm: FormState = { email: "", firstName: "", lastName: "", addressLine1: "", addressLine2: "", city: "", postalCode: "", country: "United States", phone: "" };
+
+export function CheckoutForm() {
+  const { items, subtotal, updateQuantity, clearCart, hasLoaded } = useCart();
+  const [form, setForm] = useState(initialForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+  const shipping = subtotal === 0 || subtotal >= 45 ? 0 : 6;
+
+  const update = (key: keyof FormState, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!items.length) return;
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, items: items.map((item) => ({ id: item.id, quantity: item.quantity })) }) });
+      const data = await response.json() as { orderNumber?: string; error?: string };
+      if (!response.ok || !data.orderNumber) throw new Error(data.error || "We could not place your order.");
+      setOrderNumber(data.orderNumber);
+      clearCart();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "We could not place your order.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (orderNumber) return <div className="mx-auto max-w-2xl px-5 py-16 text-center sm:py-24"><div className="rounded-[30px] bg-[#eef5ed] px-6 py-12 shadow-[0_15px_45px_rgba(40,72,51,.1)] sm:px-14"><span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#3d8761] text-white shadow-lg"><CheckCircle2 size={31} /></span><p className="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-[#4e8060]">Order confirmed</p><h1 className="mt-3 font-serif text-5xl leading-none tracking-[-.05em] text-[#294631] sm:text-6xl">A little care<br />is on its way.</h1><p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#667669]">Thank you for choosing AIIMS Medical. Your order <strong className="font-semibold text-[#3b5e47]">{orderNumber}</strong> has been carefully received. We&apos;ll send an update to <strong className="font-semibold text-[#3b5e47]">{form.email}</strong> when it ships.</p><div className="mt-8 rounded-2xl border border-[#d8e5d7] bg-white/65 px-5 py-4 text-left text-xs leading-5 text-[#5e7161]"><ShieldCheck className="mr-2 inline h-4 w-4 text-[#4b9069]" />Your order is confirmed in our system. This storefront uses a secure demo checkout — no payment has been captured.</div><Link href="/" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#2e634c] px-6 py-4 text-[10px] font-bold uppercase tracking-[.15em] text-white transition hover:bg-[#234e3a]">Continue shopping <ChevronLeft className="rotate-180" size={14} /></Link></div></div>;
+
+  if (hasLoaded && !items.length) return <div className="mx-auto max-w-xl px-5 py-20 text-center sm:py-28"><div className="rounded-[30px] bg-[#f0f5ef] px-8 py-12"><span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white text-[#488060]"><ShoppingBag size={26} /></span><h1 className="mt-6 font-serif text-4xl text-[#304a38]">Your bag is waiting.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#6d796d]">Choose a few everyday essentials and come back when you&apos;re ready.</p><Link href="/#shop" className="mt-7 inline-flex rounded-full bg-[#2e634c] px-6 py-4 text-[10px] font-bold uppercase tracking-[.15em] text-white">Browse the edit</Link></div></div>;
+
+  return <form onSubmit={submit} className="mx-auto max-w-[1230px] px-5 py-8 sm:px-8 lg:py-12"><div className="mb-8 flex items-center justify-between"><Link href="/#shop" className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[.14em] text-[#557360] transition hover:text-[#be573e]"><ChevronLeft size={15} /> Continue shopping</Link><p className="hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#61806b] sm:flex"><LockKeyhole size={13} /> Secure checkout</p></div><div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_410px] lg:gap-16"><div><div className="mb-8 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#2e634c] text-[11px] font-bold text-white">1</span><h1 className="font-serif text-[clamp(2.4rem,4vw,3.5rem)] tracking-[-.05em] text-[#304a38]">Delivery details</h1></div><section className="rounded-[25px] border border-[#e7e2da] bg-white p-5 shadow-[0_7px_20px_rgba(40,60,45,.025)] sm:p-7"><div className="grid gap-5 sm:grid-cols-2"><Field label="Email address" type="email" value={form.email} onChange={(value) => update("email", value)} className="sm:col-span-2" autoComplete="email" /><Field label="First name" value={form.firstName} onChange={(value) => update("firstName", value)} autoComplete="given-name" /><Field label="Last name" value={form.lastName} onChange={(value) => update("lastName", value)} autoComplete="family-name" /><Field label="Address" value={form.addressLine1} onChange={(value) => update("addressLine1", value)} className="sm:col-span-2" autoComplete="street-address" /><Field label="Apartment, suite etc. (optional)" required={false} value={form.addressLine2} onChange={(value) => update("addressLine2", value)} className="sm:col-span-2" autoComplete="address-line2" /><Field label="City" value={form.city} onChange={(value) => update("city", value)} autoComplete="address-level2" /><Field label="Postal code" value={form.postalCode} onChange={(value) => update("postalCode", value)} autoComplete="postal-code" /><label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#536156] sm:col-span-2">Country<select value={form.country} onChange={(event) => update("country", event.target.value)} className="h-12 rounded-xl border border-[#dedbd3] bg-[#fffdfa] px-3 text-sm font-normal tracking-normal text-[#34443a] outline-none transition focus:border-[#4a8564] focus:ring-2 focus:ring-[#daeadb]"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Australia</option></select></label><Field label="Phone (optional)" type="tel" required={false} value={form.phone} onChange={(value) => update("phone", value)} className="sm:col-span-2" autoComplete="tel" /></div></section><div className="mb-8 mt-11 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#2e634c] text-[11px] font-bold text-white">2</span><h2 className="font-serif text-3xl tracking-[-.04em] text-[#304a38]">Payment</h2></div><section className="rounded-[25px] border border-[#e7e2da] bg-white p-5 shadow-[0_7px_20px_rgba(40,60,45,.025)] sm:p-7"><div className="flex items-center gap-3 rounded-xl border border-[#78a282] bg-[#eff6ee] p-4"><span className="grid h-5 w-5 place-items-center rounded-full border-[5px] border-[#347050] bg-white" /><div><p className="text-sm font-semibold text-[#345340]">Card payment</p><p className="mt-0.5 text-xs text-[#658069]">Secure payment processing at confirmation</p></div><CreditCard className="ml-auto text-[#5e846a]" size={21} /></div><p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#718076]"><LockKeyhole className="mt-0.5 shrink-0 text-[#4e8e68]" size={14} />For this fully functional demo, checkout confirmation is simulated and no card information is requested or stored.</p></section>{error && <p role="alert" className="mt-6 rounded-xl bg-[#fce9e3] px-4 py-3 text-sm text-[#a24535]">{error}</p>}<button type="submit" disabled={isSubmitting || !items.length} className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#2e634c] px-6 py-4 text-[11px] font-bold uppercase tracking-[.16em] text-white shadow-[0_12px_24px_rgba(45,99,76,.17)] transition hover:bg-[#234e3a] disabled:cursor-wait disabled:opacity-70">{isSubmitting ? "Placing your order..." : `Place order — ${formatPrice(subtotal + shipping)}`}<LockKeyhole size={14} /></button></div>
+      <aside className="lg:sticky lg:top-28 lg:h-fit"><div className="rounded-[25px] bg-[#f0f5ef] p-5 sm:p-7"><div className="flex items-center justify-between border-b border-[#d9e4d8] pb-5"><h2 className="font-serif text-2xl text-[#334c39]">Order summary</h2><span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-[#5c7764]">{items.reduce((sum, item) => sum + item.quantity, 0)} items</span></div><div className="max-h-[340px] space-y-4 overflow-y-auto py-5">{items.map((item) => <article key={item.id} className="flex gap-3"><div className="relative h-[70px] w-[62px] shrink-0 overflow-hidden rounded-xl bg-[#e3e9e1]"><img src={item.image} alt={item.name} className="h-full w-full object-cover" /><span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#315e48] px-1 text-[9px] font-bold text-white">{item.quantity}</span></div><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#738178]">{item.category}</p><p className="mt-1 truncate text-sm font-semibold text-[#3d5143]">{item.name}</p><p className="mt-1 text-xs text-[#79857b]">{item.size}</p><div className="mt-2 flex items-center justify-between"><div className="flex items-center rounded-full border border-[#d8e2d7] bg-white p-0.5"><button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="grid h-6 w-6 place-items-center text-[#69806f]"><Minus size={12} /></button><span className="w-5 text-center text-[10px] font-bold">{item.quantity}</span><button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="grid h-6 w-6 place-items-center text-[#3f7b59]"><Plus size={12} /></button></div><p className="text-sm font-semibold text-[#405344]">{formatPrice(item.price * item.quantity)}</p></div></div></article>)}</div><div className="border-t border-[#d9e4d8] pt-4 text-sm text-[#667468]"><div className="flex justify-between py-1.5"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div><div className="flex justify-between py-1.5"><span className="flex items-center gap-1.5"><Truck size={14} />Delivery</span><span>{shipping ? formatPrice(shipping) : "Complimentary"}</span></div><div className="mt-3 flex justify-between border-t border-[#d9e4d8] pt-4 font-semibold text-[#334d3a]"><span>Total</span><span className="font-serif text-2xl">{formatPrice(subtotal + shipping)}</span></div></div></div><div className="mt-4 flex gap-3 rounded-2xl border border-[#e5e1d9] bg-[#fffdf9] px-4 py-3 text-xs leading-5 text-[#718076]"><MapPin className="mt-0.5 shrink-0 text-[#548065]" size={15} />Orders are carefully packed within one business day and include tracking as soon as they leave us.</div></aside></div></form>;
+}
+
+function Field({ label, value, onChange, type = "text", required = true, className = "", autoComplete }: { label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; className?: string; autoComplete?: string }) {
+  return <label className={`flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#536156] ${className}`}>{label}<input required={required} type={type} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="h-12 rounded-xl border border-[#dedbd3] bg-[#fffdfa] px-3 text-sm font-normal tracking-normal text-[#34443a] outline-none transition placeholder:text-[#a5ada5] focus:border-[#4a8564] focus:ring-2 focus:ring-[#daeadb]" /></label>;
+}
