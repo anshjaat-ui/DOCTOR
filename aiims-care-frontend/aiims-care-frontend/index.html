@@ -1,16 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AIIMS Care — Doctor-Formulated Wellness Kits</title>
-    <meta name="description" content="AIIMS Care — doctor-formulated wellness kits for kidney, skin, hair, dental, joint & immunity support. Fast delivery, easy returns, secure payments." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Man Matters Clone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-gray-800">
+
+<!-- 🔹 Navbar -->
+<header class="shadow-sm sticky top-0 bg-white z-50">
+  <div class="max-w-7xl mx-auto flex justify-between items-center p-4">
+    <h1 class="text-2xl font-bold text-green-600">ManClone</h1>
+    
+    <nav class="hidden md:flex gap-6 font-medium">
+      <a href="#">Home</a>
+      <a href="#">Hair</a>
+      <a href="#">Skin</a>
+      <a href="#">Wellness</a>
+    </nav>
+
+    <button class="bg-green-600 text-white px-4 py-2 rounded-lg">
+      Login
+    </button>
+  </div>
+</header>
+
+
+<!-- 🔹 Hero Section -->
+<section class="bg-green-50 py-16">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-2 items-center gap-10 px-6">
+    
+    <div>
+      <h2 class="text-4xl font-bold mb-4">
+        Take Control of Your Health
+      </h2>
+      <p class="text-gray-600 mb-6">
+        Personalized solutions for hair, skin & performance.
+      </p>
+      <button class="bg-green-600 text-white px-6 py-3 rounded-lg">
+        Get Started
+      </button>
+    </div>
+
+    <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5"
+         class="rounded-xl shadow-lg"/>
+  </div>
+</section>
+
+
+<!-- 🔹 Categories -->
+<section class="py-16 max-w-7xl mx-auto px-6">
+  <h2 class="text-2xl font-bold mb-8">Shop by Category</h2>
+
+  <div class="grid md:grid-cols-4 gap-6">
+
+    <div class="bg-white p-6 shadow rounded-xl text-center hover:shadow-lg">
+      <h3 class="font-semibold">Hair Care</h3>
+    </div>
+
+    <div class="bg-white p-6 shadow rounded-xl text-center hover:shadow-lg">
+      <h3 class="font-semibold">Skin Care</h3>
+    </div>
+
+    <div class="bg-white p-6 shadow rounded-xl text-center hover:shadow-lg">
+      <h3 class="font-semibold">Nutrition</h3>
+    </div>
+
+    <div class="bg-white p-6 shadow rounded-xl text-center hover:shadow-lg">
+      <h3 class="font-semibold">Performance</h3>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- 🔹 Products -->
+<section class="bg-gray-50 py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    
+    <h2 class="text-2xl font-bold mb-8">Popular Products</h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <!-- Product Card -->
+      <div class="bg-white rounded-xl shadow hover:shadow-lg p-4">
+        <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519"
+             class="rounded-lg mb-4"/>
+
+        <h3 class="font-semibold text-lg">Hair Regrowth Kit</h3>
+        <p class="text-gray-500 text-sm mb-2">Clinically tested</p>
+
+        <div class="flex justify-between items-center">
+          <span class="font-bold">₹999</span>
+          <button class="bg-green-600 text-white px-3 py-1 rounded">
+            Buy
+          </button>
+        </div>
+      </div>
+
+      <!-- Repeat -->
+      <div class="bg-white rounded-xl shadow p-4">
+        <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c"
+             class="rounded-lg mb-4"/>
+
+        <h3 class="font-semibold text-lg">Skin Cleanser</h3>
+        <p class="text-gray-500 text-sm mb-2">Daily use</p>
+
+        <div class="flex justify-between items-center">
+          <span class="font-bold">₹499</span>
+          <button class="bg-green-600 text-white px-3 py-1 rounded">
+            Buy
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-4">
+        <img src="https://images.unsplash.com/photo-1580281657527-47f249e8f54b"
+             class="rounded-lg mb-4"/>
+
+        <h3 class="font-semibold text-lg">Immunity Booster</h3>
+        <p class="text-gray-500 text-sm mb-2">Strong health</p>
+
+        <div class="flex justify-between items-center">
+          <span class="font-bold">₹799</span>
+          <button class="bg-green-600 text-white px-3 py-1 rounded">
+            Buy
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- 🔹 Testimonials -->
+<section class="py-16 max-w-7xl mx-auto px-6">
+  <h2 class="text-2xl font-bold mb-8">What Users Say</h2>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    
+    <div class="p-6 bg-white shadow rounded-xl">
+      <p>"Amazing results in just 2 months!"</p>
+      <h4 class="mt-4 font-semibold">Rahul</h4>
+    </div>
+
+    <div class="p-6 bg-white shadow rounded-xl">
+      <p>"Great quality and fast delivery."</p>
+      <h4 class="mt-4 font-semibold">Amit</h4>
+    </div>
+
+    <div class="p-6 bg-white shadow rounded-xl">
+      <p>"Highly recommended products."</p>
+      <h4 class="mt-4 font-semibold">Karan</h4>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- 🔹 Footer -->
+<footer class="bg-gray-900 text-white py-10">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+
+    <div>
+      <h3 class="font-bold text-lg mb-2">ManClone</h3>
+      <p class="text-gray-400">Your health partner.</p>
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Links</h3>
+      <ul class="space-y-2 text-gray-400">
+        <li>About</li>
+        <li>Contact</li>
+        <li>Privacy</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Subscribe</h3>
+      <input type="email" placeholder="Email"
+             class="p-2 w-full rounded text-black"/>
+    </div>
+
+  </div>
+</footer>
+
+</body>
 </html>
