@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
@@ -12,14 +11,17 @@ const PORT = 3000;
 
 app.use(express.json());
 
-/* ================== MONGODB CONNECT ================== */
+/* =========================
+   ✅ MONGODB CONNECTION
+========================= */
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.log("❌ Mongo Error:", err));
+  .catch((err) => console.log("❌ DB Error:", err));
 
-/* ================== MONGODB MODEL ================== */
+/* =========================
+   ✅ SCHEMA
+========================= */
 const admissionSchema = new mongoose.Schema({
-  id: String,
   fullName: String,
   email: String,
   phone: String,
@@ -28,126 +30,87 @@ const admissionSchema = new mongoose.Schema({
   pcbPercentage: Number,
   category: String,
   hostelRequired: Boolean,
-  status: String,
-  submittedAt: String,
+  status: { type: String, default: "Under Review" },
+  submittedAt: { type: Date, default: Date.now },
 });
 
 const Admission = mongoose.model("Admission", admissionSchema);
 
-/* ================== GEMINI AI ================== */
-let aiClient: GoogleGenAI | null = null;
-
-function getGeminiClient(): GoogleGenAI | null {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey && apiKey !== "MY_GEMINI_API_KEY") {
-      aiClient = new GoogleGenAI({ apiKey });
-    }
-  }
-  return aiClient;
-}
-
-/* ================== HEALTH ================== */
+/* =========================
+   HEALTH CHECK
+========================= */
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-/* ================== AI ROUTE ================== */
-app.post("/api/ai-guidance", async (req, res) => {
-  const { neetScore, pcbPercentage } = req.body || {};
-
-  try {
-    const ai = getGeminiClient();
-
-    if (ai) {
-      const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: `Suggest best medical course for NEET score ${neetScore}`,
-      });
-
-      return res.json({ success: true, data: response.text });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-
-  return res.json({ success: true, data: "Fallback response" });
-});
-
-/* ================== ADMISSION SAVE ================== */
+/* =========================
+   ✅ ADMISSION SAVE (FIXED)
+========================= */
 app.post("/api/admission", async (req, res) => {
   try {
-    const { fullName, email, phone, course, neetScore, pcbPercentage, category, hostelRequired } = req.body || {};
+    const { fullName, email, phone, course, neetScore, pcbPercentage, category, hostelRequired } = req.body;
 
     if (!fullName || !email || !phone || !course) {
       return res.status(400).json({ success: false, message: "Required fields missing" });
     }
 
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const appId = `AIIMS-2026-${randomNum}`;
-
-    const newRecord = {
-      id: appId,
+    const newAdmission = await Admission.create({
       fullName,
       email,
       phone,
       course,
-      neetScore: Number(neetScore) || 0,
-      pcbPercentage: Number(pcbPercentage) || 0,
-      category: category || "General",
-      hostelRequired: Boolean(hostelRequired),
-      status: "Under Review",
-      submittedAt: new Date().toISOString(),
-    };
-
-    // ✅ SAVE TO MONGODB
-    await Admission.create(newRecord);
-
-    res.json({
-      success: true,
-      message: "Application submitted successfully!",
-      applicationId: appId,
+      neetScore,
+      pcbPercentage,
+      category,
+      hostelRequired,
     });
 
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.json({
+      success: true,
+      message: "Saved in MongoDB ✅",
+      data: newAdmission,
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 });
 
-/* ================== GET STATUS ================== */
+/* =========================
+   ✅ STATUS CHECK FROM DB
+========================= */
 app.get("/api/admission/status/:id", async (req, res) => {
   try {
-    const record = await Admission.findOne({ id: req.params.id });
+    const record = await Admission.findById(req.params.id);
 
     if (!record) {
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res.status(404).json({ success: false, message: "Not Found" });
     }
 
     res.json({ success: true, record });
 
-  } catch (error) {
-    res.status(500).json({ success: false });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error" });
   }
 });
 
-/* ================== CONTACT ================== */
+/* =========================
+   CONTACT
+========================= */
 app.post("/api/contact", (req, res) => {
-  const { name, email, message } = req.body || {};
+  const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
     return res.status(400).json({ success: false });
   }
 
-  const ticketId = `TKT-${Math.floor(10000 + Math.random() * 90000)}`;
-
-  res.json({
-    success: true,
-    ticketId,
-  });
+  res.json({ success: true });
 });
 
-/* ================== VITE / STATIC ================== */
+/* =========================
+   VITE / BUILD
+========================= */
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -163,8 +126,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 }
 
